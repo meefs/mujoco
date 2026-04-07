@@ -19,14 +19,13 @@
 #include <utility>
 #include <vector>
 
-#include <filament/Box.h>
 #include <filament/Engine.h>
 #include <filament/IndirectLight.h>
 #include <filament/Material.h>
 #include <filament/Skybox.h>
 #include <mujoco/mujoco.h>
-#include "experimental/filament/filament/buffer_util.h"
 #include "experimental/filament/filament/builtins.h"
+#include "experimental/filament/filament/mesh.h"
 #include "experimental/filament/filament/model_util.h"
 #include "experimental/filament/filament/texture.h"
 
@@ -87,19 +86,16 @@ void ModelObjects::UploadMesh(const mjModel* model, int id) {
   meshes_.erase(id);
   convex_hulls_.erase(id);
 
-  filament::Box bounds;
-  auto vertex_buffer =
-      CreateVertexBuffer(engine_, model, id, MeshType::kNormal, &bounds);
-  auto index_buffer = CreateIndexBuffer(engine_, model, id, MeshType::kNormal);
-  meshes_[id] =
-      std::make_unique<Mesh>(engine_, index_buffer, vertex_buffer, bounds);
+  MeshData data;
+  DefaultMeshData(&data);
+  UpdateMeshData(&data, model, id, MeshType::kNormal);
+  meshes_[id] = std::make_unique<Mesh>(engine_, data);
 
   if (model->mesh_graphadr[id] >= 0) {
-    vertex_buffer =
-        CreateVertexBuffer(engine_, model, id, MeshType::kConvexHull, &bounds);
-    index_buffer = CreateIndexBuffer(engine_, model, id, MeshType::kConvexHull);
-    convex_hulls_[id] =
-        std::make_unique<Mesh>(engine_, index_buffer, vertex_buffer, bounds);
+    MeshData convex_hull_data;
+    DefaultMeshData(&convex_hull_data);
+    UpdateMeshData(&convex_hull_data, model, id, MeshType::kConvexHull);
+    convex_hulls_[id] = std::make_unique<Mesh>(engine_, convex_hull_data);
   }
 }
 
@@ -160,13 +156,10 @@ void ModelObjects::UploadHeightField(const mjModel* model, int id) {
 
   height_fields_.erase(id);
 
-  filament::Box bounds;
-  auto vertex_buffer =
-      CreateVertexBuffer(engine_, model, id, MeshType::kHeightField, &bounds);
-  auto index_buffer =
-      CreateIndexBuffer(engine_, model, id, MeshType::kHeightField);
-  height_fields_[id] =
-      std::make_unique<Mesh>(engine_, index_buffer, vertex_buffer, bounds);
+  MeshData data;
+  DefaultMeshData(&data);
+  UpdateMeshData(&data, model, id, MeshType::kHeightField);
+  height_fields_[id] = std::make_unique<Mesh>(engine_, data);
 }
 
 const Mesh* ModelObjects::GetMeshBuffer(int data_id) const {
