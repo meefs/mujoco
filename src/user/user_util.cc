@@ -1333,6 +1333,10 @@ template <typename T> std::vector<T> StringToVector(char* cs) {
   return v;
 }
 
+template<> MJAPI std::vector<std::string> StringToVector(char* cs) {
+  return StringToVector<std::string>(std::string(cs));
+}
+
 template<> MJAPI std::vector<std::string> StringToVector(const std::string& s) {
   std::vector<std::string> v;
   std::stringstream ss(s);
@@ -1346,6 +1350,7 @@ template<> MJAPI std::vector<std::string> StringToVector(const std::string& s) {
 template MJAPI std::vector<int>    StringToVector(char* cs);
 template MJAPI std::vector<float>  StringToVector(char* cs);
 template MJAPI std::vector<double> StringToVector(char* cs);
+template MJAPI std::vector<unsigned char> StringToVector(char* cs);
 
 
 template <typename T> std::vector<T> StringToVector(const std::string& s) {
